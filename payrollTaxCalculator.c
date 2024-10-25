@@ -17,49 +17,36 @@ float tax5 = 908.86;
 float calculateINSS(float salary){
 
     float contributionValue = 0;
-    float tax1[2] = {0.075, 0.00};    
-    float tax2[2] = {0.09, 21.18};    
-    float tax3[2] = {0.12, 101.18};   
-    float tax4[2] = {0.14, 181.18};
 
+    float inssTable[5][4] = {
+        {0, 1412.00, 0.075, 0},
+        {1412.01, 2666.68, 0.09, 21.18},
+        {2666.69, 4000.03, 0.12, 101.18},
+        {4000.04, 7786.02, 0.14, 181.18},
+        {7786.02, 0, 908.86, 0}
+    };
     printf("\n-----------------------------------------------");
-    if(salary <= 1412.00){
-        printf("\n Aliquot: %.3f%\n Portion to be deducted: R$ %.2f\n", tax1[0],tax1[1]);
-        contributionValue = (salary * tax1[0]); 
-        printf("\n\n    %2.f * %.3f = %.2f",salary,tax1[0],contributionValue);
-    }
-    if(1412.01 <= salary && salary <= 2666.68){
-        printf("\n Aliquot: %.2f%\n Portion to be deducted: R$ %.2f\n",tax2[0],tax2[1]);
-        contributionValue = (salary * tax2[0]);
-        printf("\n      %.2f * %.2f = %.2f",salary, tax2[0],contributionValue);
-        printf("\n      %.2f - %.2f = ",contributionValue,tax2[1]);
-        contributionValue = contributionValue - tax2[1];
-        printf("%.2f",contributionValue);
-    }
-    if(2666.69 <= salary && salary <= 4000.03){
-        printf("\n Aliquot: %.2f%\n Portion to be deducted: R$ %.2f\n",tax3[0],tax3[1]);
-        contributionValue = (salary * tax3[0]);
-        printf("\n      %.2f * %.2f = %.2f",salary, tax3[0],contributionValue);
-        printf("\n      %.2f - %.2f = ",contributionValue,tax3[1]);
-        contributionValue = contributionValue - tax3[1];
-        printf("%.2f",contributionValue);
-    }
-    if(4000.04 <= salary && salary <= 7786.02){
-        printf("\n Aliquot: %.2f%\n Portion to be deducted: R$ %.2f\n",tax4[0],tax4[1]);
-        contributionValue = (salary * tax4[0]);
-        printf("\n      %.2f * %.2f = %.2f",salary, tax4[0],contributionValue);
-        printf("\n      %.2f - %.2f = ",contributionValue,tax4[1]);
-        contributionValue = contributionValue - tax4[1];
-        printf("%.2f",contributionValue);
-    }
-    if(salary > 7786.02){
-        printf("\n Max descount: %.2f",tax5);
-        contributionValue = tax5;
-    }
+    
+    for(int i = 0; i<5;i++){
+        if(i==4 && salary > inssTable[4][0]){
+            printf("\n Max descount: %.2f",inssTable[4][2]);
+            contributionValue = inssTable[4][2];
+            break;
+        }
+        if(inssTable[i][0]<=salary && salary <= inssTable[i][1]){
+            printf("\n Aliquot: %.2f%\n Portion to be deducted: R$ %.2f\n",inssTable[i][2],inssTable[i][3]);
+            contributionValue = (salary * inssTable[i][2]);
+            printf("\n      %.2f * %.2f = %.2f",salary, inssTable[i][2],contributionValue);
+            printf("\n      %.2f - %.2f = ",contributionValue,inssTable[i][3]);
+            contributionValue = contributionValue - inssTable[i][3];
+            printf("%.2f",contributionValue);
+            break;
+        }
+    }    
     printf("\n-----------------------------------------------");
-
-    return(contributionValue);
+    return contributionValue;
 }
+
 
 //WAC = WITH ANOTHER COMPANY
 float calculateINSSWAC(float contributionValue, float contributionAC){

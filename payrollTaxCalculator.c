@@ -2,6 +2,8 @@
 #include<string.h>
 
 /*
+
+STATUS: Under Development!
     To do:
         1 - Deduction for dependent (INSS)
         2 - Additional granted

@@ -28,7 +28,7 @@ float calculateINSS(float salary){
     printf("\n-----------------------------------------------");
     
     for(int i = 0; i<5;i++){
-        if(i==4 && salary > inssTable[4][0]){
+        if(salary > inssTable[4][0]){
             printf("\n Max descount: %.2f",inssTable[4][2]);
             contributionValue = inssTable[4][2];
             break;
@@ -50,10 +50,10 @@ float calculateINSS(float salary){
 
 //WAC = WITH ANOTHER COMPANY
 float calculateINSSWAC(float contributionValue, float contributionAC){
+    
     float totalContribution = 0;
 
     printf("\n-----------------------------------------------");
-    
     printf("\n      %.2f + %.2f = ",contributionValue, contributionAC);
     totalContribution = contributionValue + contributionAC;
     printf("%.2f",totalContribution);
@@ -63,8 +63,6 @@ float calculateINSSWAC(float contributionValue, float contributionAC){
     printf("\n\n    %.2f - %.2f = ",contributionValue, totalContribution);
     contributionValue = contributionValue - totalContribution;
     printf("%.2f",contributionValue);
-
-    
     printf("\n-----------------------------------------------");
 
     return(contributionValue);
@@ -73,54 +71,46 @@ float calculateINSSWAC(float contributionValue, float contributionAC){
 
 float calculateIRRF(float salary, int dependents){
 
-    float contributionValue = 0;
-    float IRRF1[2] = {0.0, 0.0};    
-    float IRRF2[2] = {0.075, 158,40};    
-    float IRRF3[2] = {0.15, 370.40};   
-    float IRRF4[2] = {0.225, 651.73};
-    float IRRF5[2] = {0.275 , 884.96};
+    float contributionValue,deductionDep;
+    contributionValue = 0;
+    
+    deductionDep = 189.59;
+
+    float irrfTable[5][4] = {
+        {0, 2112.00, 0, 0},
+        {2112.01, 2826.65, 0.075, 158.40},
+        {2826.66, 3751.05, 0.15, 370.40},
+        {3751.06, 4664.68, 0.225, 651.73},
+        {4664.68, (salary+1), 0.275, 884.96}
+    };
 
     printf("\n-----------------------------------------------");
-
-    if(salary <= 2112.00){
-        printf("\n Aliquot: %.3f%\n Portion to be deducted: R$ %.2f\n", IRRF1[0],IRRF1[1]);
-        contributionValue = (salary * IRRF1[0]); 
-        printf("\n\n    %2.f * %.3f = %.2f",salary,IRRF1[0],contributionValue);
+    for(int i=0; i<5; i++){
+        if(salary < irrfTable[0][1]){
+            printf("\n The salary is in the exemption range!");
+            break;
+        }
+        if(irrfTable[i][0]<= salary && salary <= irrfTable[i][1]){
+            printf("\n Aliquot: %.3f%\n Portion to be deducted: R$ %.2f\n",irrfTable[i][2],irrfTable[i][3]);
+            contributionValue = (salary * irrfTable[i][2]);
+            printf("\n      %.2f * %.3f = %.2f",salary, irrfTable[i][2],contributionValue);
+            printf("\n      %.2f - %.2f = ",contributionValue,irrfTable[i][3]);
+            contributionValue = contributionValue - irrfTable[i][3];
+            printf("%.2f",contributionValue);
+            if(dependents != 0){
+                printf("\n Deduction for dependent:");
+                printf("%.2f - (%.2f * %i) = ",contributionValue, deductionDep, dependents);
+                contributionValue = contributionValue - (deductionDep * dependents);
+                printf("%.2f",contributionValue);
+                if(contributionValue <= 0){
+                    printf("\n The contribution value is 0!");
+                    contributionValue = 0;
+                }
+            }    
+            break;
+        }
     }
-    if(2112.01 <= salary && salary <= 2826.65){
-        printf("\n Aliquot: %.2f%\n Portion to be deducted: R$ %.2f\n",IRRF2[0],IRRF2[1]);
-        contributionValue = (salary * IRRF2[0]);
-        printf("\n      %.2f * %.2f = %.2f",salary, IRRF2[0],contributionValue);
-        printf("\n      %.2f - %.2f = ",contributionValue,IRRF2[1]);
-        contributionValue = contributionValue - IRRF2[1];
-        printf("%.2f",contributionValue);
-    }
-    if(2826.66 <= salary && salary <= 3751.05){
-        printf("\n Aliquot: %.2f%\n Portion to be deducted: R$ %.2f\n",IRRF3[0],IRRF3[1]);
-        contributionValue = (salary * IRRF3[0]);
-        printf("\n      %.2f * %.2f = %.2f",salary, IRRF3[0],contributionValue);
-        printf("\n      %.2f - %.2f = ",contributionValue,IRRF3[1]);
-        contributionValue = contributionValue - IRRF3[1];
-        printf("%.2f",contributionValue);
-    }
-    if(3751.06 <= salary && salary <= 4664.68){
-        printf("\n Aliquot: %.2f%\n Portion to be deducted: R$ %.2f\n",IRRF4[0],IRRF4[1]);
-        contributionValue = (salary * IRRF4[0]);
-        printf("\n      %.2f * %.2f = %.2f",salary, IRRF4[0],contributionValue);
-        printf("\n      %.2f - %.2f = ",contributionValue,IRRF4[1]);
-        contributionValue = contributionValue - IRRF4[1];
-        printf("%.2f",contributionValue);
-    }
-    if(salary > 4664.68){
-        printf("\n Aliquot: %.2f%\n Portion to be deducted: R$ %.2f\n",IRRF5[0],IRRF5[1]);
-        contributionValue = (salary * IRRF5[0]);
-        printf("\n      %.2f * %.2f = %.2f",salary, IRRF5[0],contributionValue);
-        printf("\n      %.2f - %.2f = ",contributionValue,IRRF5[1]);
-        contributionValue = contributionValue - IRRF5[1];
-        printf("%.2f",contributionValue);
-    }
-    printf("\n-----------------------------------------------\n");
-
+    printf("\n-----------------------------------------------");
     return(contributionValue);
 }
 
@@ -144,7 +134,7 @@ float calculateEmployerSocialSecurityContribution(float salary, int risk, float 
     }
 
     contributionValue = salary * taxPercentage;
-    return contributionValue;
+    return (contributionValue);
     
 }
 
@@ -207,7 +197,6 @@ int main(){
                     }else{
                         printf("\n\n ->You don't need to pay the INSS tax because the other contribution is equal to or higher than the maximum tax!\n\n");
                         contributionValue[1] = 0;
-                        break;
                     }
                 }else{
                     contributionValue[1] = calculateINSS(salary);
@@ -229,7 +218,7 @@ int main(){
                 printf("\n\n-> Enter the salary: ");
                 scanf("%f",&salary);
                 
-                printf("\n -> Set the Occupational Accident Risk:\n   1 - Low(26.8%)\n   2 - Medium(27.8%)\n   3 - High(28.8%)\n   4 - Set your percentage");
+                printf("\n -> Set the Occupational Accident Risk:\n   1 - Low(26.8%)\n   2 - Medium(27.8%)\n   3 - High(28.8%)\n   4 - Set your percentage\n  Option: ");
                 scanf("%i",&risk);
 
                 if(risk == 4){
@@ -243,23 +232,16 @@ int main(){
 
                 inssEmploye = calculateEmployerSocialSecurityContribution(salary,risk,taxPercentage);
 
-                printf("\n\n Employer Social Security Contribution value is: %.2f",inssEmploye);
-
-
+                printf("\n\n Employer Social Security Contribution value is: %.2f\n",inssEmploye);
                 break;
+
             case 3:
             printf("\n\n -> 13º salary | vacation | 1/3 vacation\n\n");
                 printf("\n\n-> Enter the salary: ");
                 scanf("%f",&salary);
 
                 calculateLaborBenefits(salary, laborBenefits);
-
-                if(laborBenefits == NULL){
-                    printf("\n\n ***  Error: Memory allocation failed! ***\n\n");
-                    return 0;
-                }
                 printf("\n  13º salary: %.2f\n  vacation: %.2f\n  1/3 vacation: %.2f\n\n  Total: %.2f\n\n",laborBenefits[0], laborBenefits[1], laborBenefits[2], laborBenefits[3]);
-                
                 break;
 
             case 4:

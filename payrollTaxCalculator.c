@@ -1,32 +1,50 @@
 #include<stdio.h>
 #include<string.h>
+#include<math.h>
 
 /*
-
-STATUS: Under Development!
-    To do:
-        1 - Deduction for dependent (INSS)
-        2 - Additional granted
-        3 - Review the code
+    ->STATUS: Under Development!
+        
+        To do:
+            1 - Additional granted
 */
-//Payroll Tax Calculator
 
+/*
+    *Remember: ALL THESE VALUES ARE BASED ON BRAZILIAN LEGISLATION (2024)
 
-float tax5 = 908.86;
+    INSS = Instituto Nacional do Seguro Social | Brazilian Social Security Institute
+    IRRF = Imposto de Renda Retido na Fonte | Withholding Income Tax
+    FGTS = Fundo de Garantia do Tempo de Serviço | Service Time Guarantee
+*/
 
-float calculateINSS(float salary){
+float salary = 0;
 
-    float contributionValue = 0;
+float fgtsTax = 0.08;
 
-    float inssTable[5][4] = {
+float inssTable[5][4] = {
         {0, 1412.00, 7.5, 0},
         {1412.01, 2666.68, 9, 21.18},
         {2666.69, 4000.03, 12, 101.18},
         {4000.04, 7786.02, 14, 181.18},
         {7786.02, 0, 908.86, 0}
     };
+
+float irrfTable[5][4] = {
+        {0, 2112.00, 0, 0},
+        {2112.01, 2826.65, 7.5, 158.40},
+        {2826.66, 3751.05, 15, 370.40},
+        {3751.06, 4664.68, 22.5, 651.73},
+        {4664.68, INFINITY, 27.5, 884.96}
+    };
+
+float deductionDep = 189.59;
+
+
+float calculateINSS(){
+
+    float contributionValue = 0;
+
     printf("\n-----------------------------------------------\nINSS:");
-    
     for(int i = 0; i<5;i++){
         if(salary > inssTable[4][0]){
             printf("\n    Max descount: %.2f",inssTable[4][2]);
@@ -57,9 +75,9 @@ float calculateINSSWAC(float contributionValue, float contributionAC){
     printf("\n\n      %.2f + %.2f = ",contributionValue, contributionAC);
     totalContribution = contributionValue + contributionAC;
     printf("%.2f",totalContribution);
-    if(totalContribution > tax5){
-        printf("\n\n      %.2f - %.2f = ",totalContribution, tax5);
-        totalContribution = totalContribution - tax5;
+    if(totalContribution > inssTable[4][2]){
+        printf("\n\n      %.2f - %.2f = ",totalContribution, inssTable[4][2]);
+        totalContribution = totalContribution - inssTable[4][2];
         printf("%.2f",totalContribution);
         printf("\n\n      %.2f - %.2f = ",contributionValue, totalContribution);
         contributionValue = contributionValue - totalContribution;
@@ -70,31 +88,21 @@ float calculateINSSWAC(float contributionValue, float contributionAC){
 }
 
 
-float calculateIRRF(float salary, int dependents){
+float calculateIRRF(float salaryWithoutINSS, int dependents){
 
-    float contributionValue,deductionDep;
+    float contributionValue;
     contributionValue = 0;
-    
-    deductionDep = 189.59;
-
-    float irrfTable[5][4] = {
-        {0, 2112.00, 0, 0},
-        {2112.01, 2826.65, 7.5, 158.40},
-        {2826.66, 3751.05, 15, 370.40},
-        {3751.06, 4664.68, 22.5, 651.73},
-        {4664.68, (salary+1), 27.5, 884.96}
-    };
 
     printf("\n-----------------------------------------------\nIRRF:");
     for(int i=0; i<5; i++){
-        if(salary < irrfTable[0][1]){
+        if(salaryWithoutINSS < irrfTable[0][1]){
             printf("\n The salary is in the exemption range!");
             break;
         }
-        if(irrfTable[i][0]<= salary && salary <= irrfTable[i][1]){
+        if(irrfTable[i][0]<= salaryWithoutINSS && salaryWithoutINSS <= irrfTable[i][1]){
             printf("\n\n    Aliquot: %.1f%%\n    Portion to be deducted: R$ %.2f\n",irrfTable[i][2],irrfTable[i][3]);
-            contributionValue = (salary * (irrfTable[i][2]/100));
-            printf("\n      %.2f * %.1f%% = %.2f",salary, irrfTable[i][2],contributionValue);
+            contributionValue = (salaryWithoutINSS * (irrfTable[i][2]/100));
+            printf("\n      %.2f * %.1f%% = %.2f",salaryWithoutINSS, irrfTable[i][2],contributionValue);
             printf("\n      %.2f - %.2f = ",contributionValue,irrfTable[i][3]);
             contributionValue = contributionValue - irrfTable[i][3];
             printf("%.2f",contributionValue);
@@ -116,7 +124,7 @@ float calculateIRRF(float salary, int dependents){
 }
 
 
-float calculateEmployerSocialSecurityContribution(float salary, int risk, float taxPercentage){
+float calculateEmployerSocialSecurityContribution(int risk, float taxPercentage){
     float contributionValue;
 
     switch (risk){
@@ -148,7 +156,7 @@ float calculateEmployerSocialSecurityContribution(float salary, int risk, float 
 }
 
 
-float calculateLaborBenefits(float salary, float laborBenefits[3]){
+float calculateLaborBenefits(float laborBenefits[3]){
     
     printf("\n-----------------------------------------------\nLabor Benefits:\n");
     //13º salary
@@ -177,14 +185,14 @@ int main(){
         contributionValue[2] = IRRF
     */
     float laborBenefits[4];
-    float salary,contributionAC,taxPercentage,inssEmploye;
+    float contributionAC,taxPercentage,inssEmploye;
     char hascontribute[1];
     
     i=contributionAC=taxPercentage=inssEmploye=0;
 
     while(i!=1){
         printf("\n******************************");
-        printf("\n\n 1 - FGTS | INSS | IRRF\n 2 - INSS Employe\n 3 - 13º salary | vacation | 1/3 vacation\n 4 - Exit\n\n");
+        printf("\n\n 1 - FGTS | INSS | IRRF\n 2 - INSS Employe\n 3 - Labor benefits -> 13º salary | vacation | 1/3 vacation\n 4 - Exit\n\n");
         printf(" ->Select your option: ");
         scanf("%i",&option);
 
@@ -198,7 +206,7 @@ int main(){
                 scanf("%f",&salary);
 
                 //Calculating the FGTS
-                contributionValue[0] = (salary * 0.08);
+                contributionValue[0] = (salary * fgtsTax);
 
                 //Calculating the INSS
                 printf("\n-> Did the employee contribute to another company (y/n)? ");
@@ -208,7 +216,7 @@ int main(){
                     printf("\n      ->Enter the contribution of another company: ");
                     scanf("%f",&contributionAC);
 
-                    if(contributionAC<tax5){
+                    if(contributionAC<inssTable[4][2]){
                         contributionValue[1] = calculateINSS(salary);
                         contributionValue[1] = calculateINSSWAC(contributionValue[1], contributionAC);
                     }else{
@@ -232,10 +240,12 @@ int main(){
                 printf("\n Employer Social Security Contribution\n\n");
                 printf("\n\n To remember:\n     Salary is composed of: salary + commission + gratification + tips + labor benefits");
                 
-                printf("\n\n -> Enter the salary: ");
+                printf("\n\n -> Enter the payroll amount: ");
                 scanf("%f",&salary);
+
+                contributionValue[0] = (salary * fgtsTax);
                 
-                printf("\n -> Set the Occupational Accident Risk:\n   1 - Low(26.8%)\n   2 - Medium(27.8%)\n   3 - High(28.8%)\n   4 - Set your percentage\n  Option: ");
+                printf("\n -> Set the Occupational Accident Risk:\n   1 - Low(26.8%%)\n   2 - Medium(27.8%%)\n   3 - High(28.8%%)\n   4 - Set your percentage\n  Option: ");
                 scanf("%i",&risk);
 
                 if(risk == 4){
@@ -248,10 +258,10 @@ int main(){
                     }while(taxPercentage>100);
                 }
 
-                inssEmploye = calculateEmployerSocialSecurityContribution(salary,risk,taxPercentage);
+                inssEmploye = calculateEmployerSocialSecurityContribution(risk,taxPercentage);
 
                 if(inssEmploye != 0){
-                    printf("\n\nResults:\n     Employer Social Security Contribution value is: $%.2f\n",inssEmploye);
+                    printf("\n\nResults:\n     Employer Social Security Contribution value is: $%.2f\n     FGTS: $%.2f\n",inssEmploye,contributionValue[0]);
                 }
                 break;
 
@@ -261,7 +271,7 @@ int main(){
                 printf("\n\n -> Enter the salary: ");
                 scanf("%f",&salary);
 
-                calculateLaborBenefits(salary, laborBenefits);
+                calculateLaborBenefits(laborBenefits);
                 printf("\nResults:\n     13º salary: $%.2f\n     vacation: $%.2f\n     1/3 vacation: $%.2f\n\n  Total: $%.2f\n",laborBenefits[0], laborBenefits[1], laborBenefits[2], laborBenefits[3]);
                 break;
 

@@ -7,6 +7,7 @@
         
         To do:
             1 - Additional granted
+            2 - Create a description
 */
 
 /*
@@ -38,6 +39,14 @@ float irrfTable[5][4] = {
     };
 
 float deductionDep = 189.59;
+
+
+float taxBusinessDay = 0.5;
+float taxSundayAndHolidays = 1;
+
+
+float reducedNightHour = 1.142857;
+float additionalNight = 20;
 
 
 float calculateINSS(){
@@ -88,7 +97,7 @@ float calculateINSSWAC(float contributionValue, float contributionAC){
 }
 
 
-float calculateIRRF(float salaryWithoutINSS, int dependents){
+float calculateIRRF(float salaryWithoutINSS, int numberOfDependents){
 
     float contributionValue;
     contributionValue = 0;
@@ -106,10 +115,10 @@ float calculateIRRF(float salaryWithoutINSS, int dependents){
             printf("\n      %.2f - %.2f = ",contributionValue,irrfTable[i][3]);
             contributionValue = contributionValue - irrfTable[i][3];
             printf("%.2f",contributionValue);
-            if(dependents != 0){
+            if(numberOfDependents != 0){
                 printf("\n\n      Deduction for dependent: ");
-                printf("%.2f - (%.2f * %i) = ",contributionValue, deductionDep, dependents);
-                contributionValue = contributionValue - (deductionDep * dependents);
+                printf("%.2f - (%.2f * %i) = ",contributionValue, deductionDep, numberOfDependents);
+                contributionValue = contributionValue - (deductionDep * numberOfDependents);
                 printf("%.2f",contributionValue);
                 if(contributionValue <= 0){
                     printf("\n      The contribution value is 0!");
@@ -174,25 +183,64 @@ float calculateLaborBenefits(float laborBenefits[3]){
 }
 
 
+float calculateOvertime(float overtimeAndBonuses[], float hours, float hoursOnBusinessDay, float hoursOnSundaysAndHolidays){
+    
+    printf("\n-----------------------------------------------\nOvertime:");
+    //Hourly rate
+    overtimeAndBonuses[0] = (salary/hours);
+    printf("\n\n     %.2f / %.2f = %.2f",salary,hours,overtimeAndBonuses[0]);
+    //Overtime on business days
+    overtimeAndBonuses[1] = ((hoursOnBusinessDay * overtimeAndBonuses[0]) * taxBusinessDay);
+    printf("\n\n     ((%.2f * %.2f) * %.2f) = %.2f",hoursOnBusinessDay, overtimeAndBonuses[0], taxBusinessDay, overtimeAndBonuses[1]);    
+    //Overtime on Sundays and holidays
+    overtimeAndBonuses[2] = ((hoursOnSundaysAndHolidays * overtimeAndBonuses[0]) * taxSundayAndHolidays);
+    printf("\n\n     ((%.2f * %.2f) * %.2f) = %.2f",hoursOnSundaysAndHolidays, overtimeAndBonuses[0], taxSundayAndHolidays, overtimeAndBonuses[2]);
+    //Total overtime
+    overtimeAndBonuses[3] = (overtimeAndBonuses[1] + overtimeAndBonuses[2]);
+    printf("\n\n     %.2f + %.2f = %.2f",overtimeAndBonuses[1], overtimeAndBonuses[2], overtimeAndBonuses[3]);
+    printf("\n\n-----------------------------------------------");
+
+}
+
+float calculateNightDifferentialPay(float overtimeAndBonuses[], float hours, float hoursAtNight){
+    
+    printf("\n-----------------------------------------------\nNight Differential Pay:");
+    //Hourly rate
+    overtimeAndBonuses[0] = (salary/hours);
+    printf("\n\n     %.2f / %.2f = %.2f",salary,hours,overtimeAndBonuses[0]);
+    //Total night hours worked
+    overtimeAndBonuses[1] = (hoursAtNight * reducedNightHour);
+    printf("\n\n     %.2f * %.2f = %.2f",hoursAtNight, reducedNightHour, overtimeAndBonuses[1]);
+    //Night differential pay
+    overtimeAndBonuses[2] = (overtimeAndBonuses[0] * (additionalNight/100));
+    printf("\n\n     %.2f * %.2f%% = %.2f",overtimeAndBonuses[0], additionalNight, overtimeAndBonuses[2]);
+    printf("\n\n     %.2f * %.2f",overtimeAndBonuses[1],overtimeAndBonuses[2]);
+    overtimeAndBonuses[2] = overtimeAndBonuses[1] * overtimeAndBonuses[2];
+    printf("= %.2f", overtimeAndBonuses[2]);
+    //Total night differential pay
+    overtimeAndBonuses[3] = salary + overtimeAndBonuses[2];
+    printf("\n\n     %.2f + %.2f = %.2f",salary, overtimeAndBonuses[2], overtimeAndBonuses[3]);
+    printf("\n\n-----------------------------------------------");
+}
+
 
 int main(){
 
-    int i,option,risk,dependents;
-    float contributionValue[3] = {0, 0, 0};   
+    int i, option, risk, numberOfDependents;
+    float contributionValue[3] = {0, 0, 0}, overtimeAndBonuses[4] = {0, 0, 0, 0};   
     /*
         contributionValue[0] = FTGS
         contributionValue[1] = INSS
         contributionValue[2] = IRRF
     */
-    float laborBenefits[4];
-    float contributionAC,taxPercentage,inssEmploye;
-    char hascontribute[1];
+    float laborBenefits[4], contributionAC, taxPercentage, inssEmploye, hours, hoursOnBusinessDay, hoursOnSundaysAndHolidays, hoursAtNight;
+    char hasContribute[1];
     
-    i=contributionAC=taxPercentage=inssEmploye=0;
+    i = contributionAC = taxPercentage = inssEmploye = 0;
 
     while(i!=1){
         printf("\n******************************");
-        printf("\n\n 1 - FGTS | INSS | IRRF\n 2 - INSS Employe\n 3 - Labor benefits -> 13º salary | vacation | 1/3 vacation\n 4 - Exit\n\n");
+        printf("\n\n 1 - FGTS | INSS | IRRF\n 2 - INSS Employe\n 3 - Labor benefits -> 13º salary | vacation | 1/3 vacation\n 4 - Overtime and bonuses\n 5 - Exit\n\n");
         printf(" ->Select your option: ");
         scanf("%i",&option);
 
@@ -210,9 +258,9 @@ int main(){
 
                 //Calculating the INSS
                 printf("\n-> Did the employee contribute to another company (y/n)? ");
-                scanf(" %c",&hascontribute[0]);
+                scanf(" %c",&hasContribute[0]);
             
-                if(hascontribute[0] == 'y'){
+                if(hasContribute[0] == 'y'){
                     printf("\n      ->Enter the contribution of another company: ");
                     scanf("%f",&contributionAC);
 
@@ -229,8 +277,8 @@ int main(){
                 
                 //Calculating the IRRF
                 printf("\n\n-> Enter the number of dependents: ");
-                scanf("%i",&dependents);
-                contributionValue[2] = calculateIRRF((salary - contributionValue[1]),dependents);
+                scanf("%i",&numberOfDependents);
+                contributionValue[2] = calculateIRRF((salary - contributionValue[1]),numberOfDependents);
 
                 printf("\n\nResults:\n    -> The contributions values are: \n        FGTS: $%.2f\n        INSS: $%.2f\n        IRRF: $%.2f\n\n",contributionValue[0],contributionValue[1],contributionValue[2]);
                 break;
@@ -276,6 +324,51 @@ int main(){
                 break;
 
             case 4:
+                printf("******************************");
+                printf("\n\n Overtime and bonuses");
+
+                printf("\n\n -> Enter the salary: ");
+                scanf("%f",&salary);
+                printf("\n\n -> How many hours per month are there in a regular work schedule? ");
+                scanf("%f",&hours);
+
+                printf("\n\n 1 - Value of the hour worked\n 2 - Overtime\n 3 - Night differential pay\n");
+                printf(" -> Select your option: ");
+                scanf("%i",&option);
+                switch(option){
+                    case 1:
+                        salary = (salary/hours);
+                        printf("\n-----------------------------------------------");
+                        printf("\nResults:\n     The value of the hour worked is: $%.2f\n",salary);
+                        break;
+
+                    case 2:
+                        printf("\n -> How many overtimes hours were worked on business day (50%%)? ");
+                        scanf("%f",&hoursOnBusinessDay);
+                        printf("\n -> How many overtimes hours were worked on sundays and holidays (100%%)? ");
+                        scanf("%f",&hoursOnSundaysAndHolidays);
+                        
+                        calculateOvertime(overtimeAndBonuses, hours, hoursOnBusinessDay, hoursOnSundaysAndHolidays);
+                        printf("\nResults:\n     Hourly rate: $%.2f\n     Business days: $%.2f\n     Sundays and Holidays: $%.2f \n     Total: $%.2f\n",overtimeAndBonuses[0],overtimeAndBonuses[1],overtimeAndBonuses[2],overtimeAndBonuses[3]);
+                        break;
+                
+                    case 3:
+                        printf("\n -> How many hours were worked during the night? ");
+                        scanf("%f",&hoursAtNight);
+
+                        calculateNightDifferentialPay(overtimeAndBonuses, hours, hoursAtNight);
+                        printf("\nResults:\n     Hourly rate: $%.2f\n     Total night hours worked: %.2f Hours\n     Night differential pay: $%.2f \n     Total: $%.2f\n",overtimeAndBonuses[0],overtimeAndBonuses[1],overtimeAndBonuses[2],overtimeAndBonuses[3]);
+                        break;
+
+                    default:
+                        printf("\n *** Invalid option! ***\n\nPress 'enter' to continue!\n");
+                        getchar();
+                        getchar();
+                        break;
+                }
+                break;
+
+            case 5:
                 return 0;
             
             default:

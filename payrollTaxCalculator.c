@@ -4,10 +4,6 @@
 
 /*
     ->STATUS: Under Development!
-        
-        To do:
-            1 - Additional granted
-            2 - Create a description
 */
 
 /*
@@ -20,32 +16,46 @@
 
 float salary = 0;
 
+//The FGTS rate is 8%
 float fgtsTax = 0.08;
 
+/*
+    inssTable[i][0] and inssTable[i][1] represent the salary range for each tax bracket
+    inssTable[i][2] indicates the tax rate (%) for the bracket, and inssTable[i][3] is the deduction amount.
+*/
 float inssTable[5][4] = {
-        {0, 1412.00, 7.5, 0},
-        {1412.01, 2666.68, 9, 21.18},
-        {2666.69, 4000.03, 12, 101.18},
-        {4000.04, 7786.02, 14, 181.18},
-        {7786.02, 0, 908.86, 0}
-    };
+    {0, 1412.00, 7.5, 0},
+    {1412.01, 2666.68, 9, 21.18},
+    {2666.69, 4000.03, 12, 101.18},
+    {4000.04, 7786.02, 14, 181.18},
+    {7786.02, 0, 908.86, 0}
+};
 
+/*
+    irrfTable[i][0] and inssTable[i][1] represent the salary range for each tax bracket
+    irrfTable[i][2] indicates the tax rate (%) for the bracket, and irrfTable[i][3] is the deduction amount.
+*/
 float irrfTable[5][4] = {
-        {0, 2112.00, 0, 0},
-        {2112.01, 2826.65, 7.5, 158.40},
-        {2826.66, 3751.05, 15, 370.40},
-        {3751.06, 4664.68, 22.5, 651.73},
-        {4664.68, INFINITY, 27.5, 884.96}
-    };
+    {0, 2112.00, 0, 0},
+    {2112.01, 2826.65, 7.5, 158.40},
+    {2826.66, 3751.05, 15, 370.40},
+    {3751.06, 4664.68, 22.5, 651.73},
+    {4664.68, INFINITY, 27.5, 884.96}
+};
 
+//Deduction amount per dependent
 float deductionDep = 189.59;
 
-
+//Overtime rate on business days(Monday,Tuesday,Wednesday,Thursday,Friday,Saturday)
 float taxBusinessDay = 0.5;
+
+//Overtime rate on Holidays and Sundays
 float taxSundayAndHolidays = 1;
 
-
+// Between 10:00 PM and 5:00 AM, 1 hour is equivalent to 52.5 minutes | 60 / 52.5 = 1.142857
 float reducedNightHour = 1.142857;
+
+// Additional 20% when worked between 10:00 PM and 5:00 AM
 float additionalNight = 20;
 
 
@@ -75,7 +85,7 @@ float calculateINSS(){
 }
 
 
-//WAC = WITH ANOTHER COMPANY
+//WAC = WITH ANOTHER COMPANY | Refears to when the employee has made one contribution previously
 float calculateINSSWAC(float contributionValue, float contributionAC){
     
     float totalContribution = 0;

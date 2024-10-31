@@ -339,7 +339,7 @@ int main(){
 
                 printf("\n\n -> Enter the salary: ");
                 scanf("%f",&salary);
-                printf("\n\n -> How many hours per month are there in a regular work schedule? ");
+                printf("\n\n -> How many hours per month are there in a regular work schedule(220 hours normally)? ");
                 scanf("%f",&hours);
 
                 printf("\n\n 1 - Value of the hour worked\n 2 - Overtime\n 3 - Night differential pay\n");
